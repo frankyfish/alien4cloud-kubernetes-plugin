@@ -3,34 +3,35 @@
   <parent>
     <groupId>alien4cloud</groupId>
     <artifactId>alien4cloud-parent</artifactId>
-    <version>3.3.0</version>
+    <!-- todo: upgrade this version with new parent release -->
+    <version>3.4.0-SNAPSHOT</version>
   </parent>
   <artifactId>alien4cloud-kubernetes-plugin</artifactId>
-  <version>3.3.0</version>
+  <version>3.4.0-SNAPSHOT</version>
   <name>Alien 4 Cloud K8S plugin</name>
   <description>This plugin is used to manage transformation of containers in a topology into specific kubernetes nodes.</description>
 
-  <repositories>
-    <repository>
-      <id>pdl-releases</id>
-      <url>https://www.portaildulibre.fr/nexus/repository/opensource-releases</url>
-    </repository>
-  </repositories>
+<!--  <repositories>-->
+<!--    <repository>-->
+<!--      <id>pdl-releases</id>-->
+<!--      <url>https://www.portaildulibre.fr/nexus/repository/opensource-releases</url>-->
+<!--    </repository>-->
+<!--  </repositories>-->
 
   <scm>
     <connection>scm:git:https://github.com/alien4cloud/alien4cloud-kubernetes-plugin.git</connection>
   </scm>
 
-  <distributionManagement>
-    <repository>
-      <id>pdl-releases</id>
-      <url>https://www.portaildulibre.fr/nexus/repository/opensource-releases</url>
-    </repository>
-    <snapshotRepository>
-      <id>pdl-snapshots</id>
-      <url>https://www.portaildulibre.fr/nexus/repository/opensource-snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
+<!--  <distributionManagement>-->
+<!--    <repository>-->
+<!--      <id>pdl-releases</id>-->
+<!--      <url>https://www.portaildulibre.fr/nexus/repository/opensource-releases</url>-->
+<!--    </repository>-->
+<!--    <snapshotRepository>-->
+<!--      <id>pdl-snapshots</id>-->
+<!--      <url>https://www.portaildulibre.fr/nexus/repository/opensource-snapshots</url>-->
+<!--    </snapshotRepository>-->
+<!--  </distributionManagement>-->
 
   <properties>
 
@@ -67,9 +68,9 @@
     <jaxb.version>2.1.9</jaxb.version>
 
     <!-- Spring (DI / Rest / Security) -->
-    <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
-    <spring.version>4.3.2.RELEASE</spring.version>
-    <spring.security.version>3.2.5.RELEASE</spring.security.version>
+<!--    <spring-boot.version>1.4.0.RELEASE</spring-boot.version>-->
+<!--    <spring.version>4.3.2.RELEASE</spring.version>-->
+<!--    <spring.security.version>3.2.5.RELEASE</spring.security.version>-->
     <spring.ldap.version>2.0.1.RELEASE</spring.ldap.version>
     <aspectj.version>1.7.4</aspectj.version>
 
@@ -124,7 +125,8 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
+      <!--   somehow inheritance from spring bom doesn't work here  -->
+      <version>1.18.30</version>
       <scope>provided</scope>
     </dependency>
     <!-- tests -->
@@ -182,13 +184,13 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
-      <version>${spring.version}</version>
+<!--      <version>${spring.version}</version>-->
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
-      <version>${spring.version}</version>
+<!--      <version>${spring.version}</version>-->
       <scope>test</scope>
     </dependency>
 
