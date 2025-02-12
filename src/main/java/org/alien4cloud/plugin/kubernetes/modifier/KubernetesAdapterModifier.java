@@ -1,14 +1,12 @@
 package org.alien4cloud.plugin.kubernetes.modifier;
 
 import alien4cloud.component.repository.ArtifactRepositoryConstants;
-import alien4cloud.paas.wf.TopologyContext;
 import alien4cloud.paas.wf.WorkflowSimplifyService;
 import alien4cloud.paas.wf.WorkflowsBuilderService;
 import alien4cloud.paas.wf.validation.WorkflowValidator;
 import alien4cloud.topology.TopologyService;
 import alien4cloud.tosca.context.ToscaContext;
 import alien4cloud.tosca.context.ToscaContextual;
-import alien4cloud.tosca.parser.ToscaParser;
 import alien4cloud.tosca.serializer.ToscaPropertySerializerUtils;
 import alien4cloud.utils.CloneUtil;
 import alien4cloud.utils.MapUtil;
@@ -38,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.*;
 import java.util.stream.Stream;
 

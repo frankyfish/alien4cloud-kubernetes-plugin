@@ -29,12 +29,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
-import javax.annotation.Resource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import jakarta.annotation.Resource;
 import org.alien4cloud.alm.deployment.configuration.flow.FlowExecutionContext;
 import org.alien4cloud.alm.deployment.configuration.flow.TopologyModifierSupport;
 import org.alien4cloud.plugin.kubernetes.AbstractKubernetesModifier;

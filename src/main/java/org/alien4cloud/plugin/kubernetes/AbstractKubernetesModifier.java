@@ -1,8 +1,6 @@
 package org.alien4cloud.plugin.kubernetes;
 
 import static alien4cloud.utils.AlienUtils.safe;
-import static org.alien4cloud.plugin.kubernetes.modifier.KubeTopologyUtils.K8S_TYPES_DEPLOYMENT;
-import static org.alien4cloud.plugin.kubernetes.modifier.KubernetesAdapterModifier.K8S_TYPES_KUBEDEPLOYMENT;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -31,7 +29,7 @@ import org.alien4cloud.tosca.normative.types.ToscaTypes;
 import org.alien4cloud.tosca.utils.TopologyNavigationUtil;
 import org.apache.commons.lang.StringUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 public abstract class AbstractKubernetesModifier extends TopologyModifierSupport {
 
