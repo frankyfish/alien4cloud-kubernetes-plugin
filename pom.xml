@@ -3,19 +3,12 @@
   <parent>
     <groupId>alien4cloud</groupId>
     <artifactId>alien4cloud-parent</artifactId>
-    <version>3.4.0</version>
+    <version>3.4.0-SNAPSHOT</version>
   </parent>
   <artifactId>alien4cloud-kubernetes-plugin</artifactId>
-  <version>3.4.0</version>
+  <version>3.3.0</version>
   <name>Alien 4 Cloud K8S plugin</name>
   <description>This plugin is used to manage transformation of containers in a topology into specific kubernetes nodes.</description>
-
-  <repositories>
-    <repository>
-      <id>pdl-releases</id>
-      <url>https://www.portaildulibre.fr/nexus/repository/opensource-releases</url>
-    </repository>
-  </repositories>
 
   <scm>
     <connection>scm:git:https://github.com/alien4cloud/alien4cloud-kubernetes-plugin.git</connection>
@@ -23,17 +16,14 @@
 
   <distributionManagement>
     <repository>
-      <id>pdl-releases</id>
-      <url>https://www.portaildulibre.fr/nexus/repository/opensource-releases</url>
+      <id>internal.repo</id>
+      <name>Github Repo</name>
+      <url>file:///home/tri/Work/a4c/upstream/alien4cloud-kubernetes-plugin</url>
     </repository>
-    <snapshotRepository>
-      <id>pdl-snapshots</id>
-      <url>https://www.portaildulibre.fr/nexus/repository/opensource-snapshots</url>
-    </snapshotRepository>
   </distributionManagement>
 
   <properties>
-
+    <alien4cloud.version>3.4.0-SNAPSHOT</alien4cloud.version>
     <!-- CSARs version -->
     <org.alien4cloud.kubernetes.api.version>3.1.0</org.alien4cloud.kubernetes.api.version>
 
@@ -98,7 +88,7 @@
     <dependency>
       <groupId>alien4cloud</groupId>
       <artifactId>alien4cloud-core</artifactId>
-      <version>${project.version}</version>
+      <version>${alien4cloud.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -121,28 +111,28 @@
     <dependency>
       <groupId>alien4cloud</groupId>
       <artifactId>alien4cloud-test-common</artifactId>
-      <version>${project.version}</version>
+      <version>${alien4cloud.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <!--<dependency>-->
       <!--<groupId>alien4cloud</groupId>-->
       <!--<artifactId>alien4cloud-rest-it</artifactId>-->
-      <!--<version>${project.version}</version>-->
+      <!--<version>${alien4cloud.version}</version>-->
       <!--<scope>test</scope>-->
       <!--<classifier>tests</classifier>-->
     <!--</dependency>-->
     <dependency>
       <groupId>alien4cloud</groupId>
       <artifactId>alien4cloud-tosca</artifactId>
-      <version>${project.version}</version>
+      <version>${alien4cloud.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
     </dependency>
     <dependency>
       <groupId>alien4cloud</groupId>
       <artifactId>alien4cloud-security</artifactId>
-      <version>${project.version}</version>
+      <version>${alien4cloud.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -369,6 +359,13 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.1</version>
+        <configuration>
+          <altDeploymentRepository>internal.repo::default::file:///home/tri/Work/a4c/upstream/alien4cloud-kubernetes-plugin</altDeploymentRepository>
+        </configuration>
+      </plugin>
     </plugins>
 
   </build>
@@ -381,7 +378,7 @@
         <dependency>
           <groupId>alien4cloud</groupId>
           <artifactId>alien4cloud-core</artifactId>
-          <version>${project.version}</version>
+          <version>${alien4cloud.version}</version>
           <scope>compile</scope>
           <exclusions>
             <exclusion>
