@@ -97,7 +97,7 @@ public class KubernetesLocationTopologyModifier extends AbstractKubernetesModifi
             WorkflowValidator.disableValidationThreadLocal.set(true);
             doProcess(topology, context);
         } catch (Exception e) {
-            context.getLog().error("Couldn't process " + A4C_KUBERNETES_MODIFIER_TAG);
+            context.getLog().internalError("Couldn't process " + A4C_KUBERNETES_MODIFIER_TAG);
             log.log(Level.WARNING, "Couldn't process " + A4C_KUBERNETES_MODIFIER_TAG, e);
         } finally {
             WorkflowValidator.disableValidationThreadLocal.remove();
@@ -383,7 +383,7 @@ public class KubernetesLocationTopologyModifier extends AbstractKubernetesModifi
 
         String imageName = getContainerImageName(containerNodeTemplate);
         if (imageName == null) {
-            context.getLog().error("Image is not set for container <" + containerNodeTemplate.getName() + ">");
+            context.getLog().error(controllerNodeTemplate.getName(), "Image is not set for container <" + containerNodeTemplate.getName() + ">");
         }
         setNodePropertyPathValue(csar, topology, containerRuntimeNodeTemplate, "container.image", new ScalarPropertyValue(imageName));
         setNodePropertyPathValue(csar, topology, containerRuntimeNodeTemplate, "container.name",
@@ -491,7 +491,7 @@ public class KubernetesLocationTopologyModifier extends AbstractKubernetesModifi
 
                 AbstractPropertyValue port = containerNodeTemplate.getCapabilities().get(endpointName).getProperties().get("port");
                 if (port == null) {
-                    context.log().error("Connecting container to an external requires its endpoint port to be defined. Port of [" + containerNodeTemplate.getName()
+                    context.log().error(containerNodeTemplate.getName(), "Connecting container to an external requires its endpoint port to be defined. Port of [" + containerNodeTemplate.getName()
                             + ".capabilities." + endpointName + "] is not defined.");
                     return;
                 }

@@ -29,12 +29,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
-import javax.annotation.Resource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import jakarta.annotation.Resource;
 import org.alien4cloud.alm.deployment.configuration.flow.FlowExecutionContext;
 import org.alien4cloud.alm.deployment.configuration.flow.TopologyModifierSupport;
 import org.alien4cloud.plugin.kubernetes.AbstractKubernetesModifier;
@@ -128,7 +127,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
             // TODO: should be done in the deployment flow instead of here
             workflowSimplifyService.reentrantSimplifyWorklow(topologyContext, topology.getWorkflows().keySet());
         } catch (Exception e) {
-            context.getLog().error("Couldn't process " + A4C_KUBERNETES_MODIFIER_TAG);
+            context.getLog().internalError("Couldn't process " + A4C_KUBERNETES_MODIFIER_TAG);
             log.log(Level.WARNING, "Couldn't process " + A4C_KUBERNETES_MODIFIER_TAG, e);
         } finally {
             WorkflowValidator.disableValidationThreadLocal.remove();
@@ -201,7 +200,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
 
         String providedNamespace = getProvidedMetaproperty(context, K8S_NAMESPACE_METAPROP_NAME);
         if (providedNamespace != null) {
-            context.getLog().info("All resources will be created into the namespace <" + providedNamespace + ">");
+            context.getLog().info(providedNamespace, "All resources will be created into the namespace <" + providedNamespace + ">");
         }
         // finally set the 'resource_spec' property with the JSON content of the resource specification
         Set<NodeTemplate> resourceNodes = TopologyNavigationUtil.getNodesOfType(topology, K8S_TYPES_BASE_RESOURCE, true);
@@ -303,14 +302,14 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                 RelationshipTemplate relationshipToRemove = TopologyNavigationUtil.getTargetRelationships(nodeToKeep, "dependency").iterator().next();
                 if (!relationshipToRemove.getTarget().equals(deploymentUnitNodeName)) {
                     String msg = String.format("Same service name (%s) used for services that target different deployment units (at least %s and %s), please review your matching !", e.getKey(), nodeToKeep.getName(), nodeToRemove.getName());
-                    context.getLog().error(msg);
+                    context.getLog().error(nodeToRemoveCandidate.getName(), msg);
                     throw new UnsupportedOperationException();
                 }
                 // check that services with same service name are of the same type
                 String nodeToRemoveServiceType = PropertyUtil.getScalarPropertyValueFromPath(safe(nodeToRemove.getProperties()), "spec.service_type");
                 if (!StringUtils.equals(nodeToKeepServiceType, nodeToRemoveServiceType)) {
                     String msg = String.format("Same service name (%s) used for services that are different service types (%s (%s) != %s (%s)), please review your matching !", e.getKey(), nodeToKeep.getName(), nodeToKeepServiceType, nodeToRemove.getName(), nodeToRemoveServiceType);
-                    context.getLog().error(msg);
+                    context.getLog().error(nodeToRemoveCandidate.getName(), msg);
                     throw new UnsupportedOperationException();
                 }
 
@@ -365,7 +364,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
         NodeTemplate targetNodeTemplate = topology.getNodeTemplates().get(targetRelationship.getTarget());
         AbstractPropertyValue port = TopologyNavigationUtil.getNodeCapabilityPropertyValue(targetNodeTemplate, targetRelationship.getTargetedCapabilityName(), "port");
         if (port == null) {
-            context.log().error("Connecting container to an external service requires its endpoint port to be defined. Port of [" + targetNodeTemplate.getName()
+            context.log().error(targetNodeTemplate.getName(), "Connecting container to an external service requires its endpoint port to be defined. Port of [" + targetNodeTemplate.getName()
                     + ".capabilities." + targetRelationship.getTargetedCapabilityName() + "] is not defined.");
             return;
         }
@@ -429,7 +428,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
             hostOfContainer = TopologyNavigationUtil.getHostOfTypeInHostingHierarchy(topology, targetContainer, K8S_TYPES_STATEFULSET);
         }
         if (hostOfContainer == null) {
-            ctx.getLog().error("failed to get controller hosting volume <"+ volumeNode.getName() + ">");
+            ctx.getLog().internalError("failed to get controller hosting volume <"+ volumeNode.getName() + ">");
             return;
         }
         // get the deployment resource corresponding to this deployment
@@ -440,7 +439,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
         if(ToscaTypeUtils.isOfType(hostNodeType, K8S_TYPES_STATEFULSET)){
             // If statefulSet does not match a PVC, raise error
             if(!ToscaTypeUtils.isOfType(volumeNodeType, KubeTopologyUtils.K8S_TYPES_VOLUMES_CLAIM)){
-                ctx.log().error("StatefulSet "+hostOfContainer.getName()+" should match a PersistentVolumeClaim resource !");
+                ctx.log().error(hostOfContainer.getName(), "StatefulSet "+hostOfContainer.getName()+" should match a PersistentVolumeClaim resource !");
                 return;
             }
             manageVolumeClaimTemplates(ctx, csar, topology, volumeNode, resourceNodeYamlStructures, controllerResourceNode);
@@ -488,7 +487,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
     Map<String, Map<String, AbstractPropertyValue>> resourceNodeYamlStructures, NodeTemplate statefulsetResourceNode) {
         AbstractPropertyValue size = PropertyUtil.getPropertyValueFromPath(volumeNode.getProperties(), "size");
                 if(size ==null){
-                    ctx.log().error("Volume node "+volumeNode.getName()+" should have a size !");
+                    ctx.log().internalError(volumeNode.getName(), "Volume node "+ volumeNode.getName() + " should have a size !");
                 }
 
         NodeType nodeType = ToscaContext.get(NodeType.class, volumeNode.getType());
@@ -553,7 +552,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                 NodeType nodeType = ToscaContext.get(NodeType.class, volumeNode.getType());
                 AbstractPropertyValue size = PropertyUtil.getPropertyValueFromPath(volumeNode.getProperties(), "size");
                 if(size ==null){
-                    ctx.log().error("Volume node "+volumeNode.getName()+" should have a size !");
+                    ctx.log().internalError(volumeNode.getName(), "Volume node "+ volumeNode.getName() + " should have a size !");
                 }
                 PropertyDefinition propertyDefinition = nodeType.getProperties().get("size");
                 Object transformedSize = getTransformedValue(size, propertyDefinition, "");
@@ -669,7 +668,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                     sb.append(PropertyUtil.getScalarValue(v));
                 } else {
                     // TODO: we need a AbstractPropertyValue serializer
-                    context.getLog().warn("Some element in concat operation for input <" + inputName + "> (" + serializePropertyValue(param)+ ") of container <" + nodeTemplate.getName() + "> resolved to a complex result. Let's ignore it.");
+                    context.getLog().warn(nodeTemplate.getName(), "Some element in concat operation for input <" + inputName + "> (" + serializePropertyValue(param)+ ") of container <" + nodeTemplate.getName() + "> resolved to a complex result. Let's ignore it.");
                 }
             }
             return new ScalarPropertyValue(sb.toString());
@@ -688,11 +687,11 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                 if (propertyValue instanceof PropertyValue) {
                     return propertyValue;
                 } else {
-                    context.getLog().warn("Property is not PropertyValue but <" + propertyValue.getClass() + "> for input <" + inputName + "> (" + serializePropertyValue(propertyValue)+ ") of container <" + nodeTemplate.getName() + ">");
+                    context.getLog().warn(nodeTemplate.getName(), "Property is not PropertyValue but <" + propertyValue.getClass() + "> for input <" + inputName + "> (" + serializePropertyValue(propertyValue)+ ") of container <" + nodeTemplate.getName() + ">");
                 }
             }
         } catch (IllegalArgumentException iae) {
-            context.getLog().warn("Can't resolve value for input <" + inputName + "> (" + serializePropertyValue(iValue)+ ") of container <" + nodeTemplate.getName() + ">, error was : " + iae.getMessage());
+            context.getLog().warn(nodeTemplate.getName(), "Can't resolve value for input <" + inputName + "> (" + serializePropertyValue(iValue)+ ") of container <" + nodeTemplate.getName() + ">, error was : " + iae.getMessage());
         }
         return null;
     }
@@ -758,7 +757,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                     if (propertyValue instanceof ListPropertyValue) {
                         setNodePropertyPathValue(csar, topology, containerNode, "container.args", propertyValue);
                     } else {
-                        context.getLog().warn("Ignoring args for container <" + nodeTemplate.getName() + ">, it should be a list but it is not");
+                        context.getLog().warn(nodeTemplate.getName(), "Ignoring args for container <" + nodeTemplate.getName() + ">, it should be a list but it is not");
                     }
                 }
 
@@ -847,9 +846,9 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                                     envEntry.getValue().put("value", v);
                                     try {
                                         appendNodePropertyPathValue(csar, topology, containerNode, "container.env", envEntry);
-                                        context.getLog().info("Env variable <" + envKey + "> for container <" + nodeTemplate.getName() + "> set to value <" + serializePropertyValue(v) + ">");
+                                        context.getLog().info(nodeTemplate.getName(), "Env variable <" + envKey + "> for container <" + nodeTemplate.getName() + "> set to value <" + serializePropertyValue(v) + ">");
                                     } catch(Exception e) {
-                                        context.getLog().warn("Not able to set env variable <" + envKey + "> to value <" + serializePropertyValue(v) + "> for container <" + nodeTemplate.getName() + ">, error was : " + e.getMessage());
+                                        context.getLog().warn(nodeTemplate.getName(), "Not able to set env variable <" + envKey + "> to value <" + serializePropertyValue(v) + "> for container <" + nodeTemplate.getName() + ">, error was : " + e.getMessage());
                                     }
                                 } else if (!configMapFactories.isEmpty()) {
                                     // maybe it's a config that should be associated with a configMap
@@ -859,14 +858,14 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                                             // ok this input is related to this configMapFactory
                                             String varName = inputName.substring(inputPrefix.length());
                                             if (!(v instanceof ScalarPropertyValue)) {
-                                                context.getLog().warn("Ignoring INPUT named <" + inputName + "> for container <" + nodeTemplate.getName() + "> because the value is not a scalar (" + serializePropertyValue(v) + ") and cannot be added to a configMap");
+                                                context.getLog().warn(nodeTemplate.getName(), "Ignoring INPUT named <" + inputName + "> for container <" + nodeTemplate.getName() + "> because the value is not a scalar (" + serializePropertyValue(v) + ") and cannot be added to a configMap");
                                             } else {
                                                 for (NodeTemplate configMapFactory : configMapFactoryEntry.getValue()) {
                                                     try {
                                                         setNodePropertyPathValue(csar, topology, configMapFactory, "input_variables." + varName, v);
-                                                        context.getLog().info("Successfully set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap <" + configMapFactory.getName() + "> for container <" + nodeTemplate.getName() + ">");
+                                                        context.getLog().info(nodeTemplate.getName(), "Successfully set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap <" + configMapFactory.getName() + "> for container <" + nodeTemplate.getName() + ">");
                                                     } catch(Exception e) {
-                                                        context.getLog().warn("Not able to set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap, <" + configMapFactory.getName() + "> for container <" + nodeTemplate.getName() + ">, error was : " + e.getMessage());
+                                                        context.getLog().warn(nodeTemplate.getName(), "Not able to set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap, <" + configMapFactory.getName() + "> for container <" + nodeTemplate.getName() + ">, error was : " + e.getMessage());
                                                     }
                                                 }
                                             }
@@ -875,10 +874,10 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
                                     }
                                 }
                             } else {
-                                context.log().warn("Not able to define value for input <" + inputName + "> (" + serializePropertyValue((AbstractPropertyValue)iValue) + ") of container <" + nodeTemplate.getName() + ">");
+                                context.log().warn(nodeTemplate.getName(), "Not able to define value for input <" + inputName + "> (" + serializePropertyValue((AbstractPropertyValue)iValue) + ") of container <" + nodeTemplate.getName() + ">");
                             }
                         } else {
-                            context.log().warn("Input <" + inputName + "> of container <" + nodeTemplate.getName() + "> is ignored since it's not of type AbstractPropertyValue but " + iValue.getClass().getSimpleName());
+                            context.log().warn(nodeTemplate.getName(), "Input <" + inputName + "> of container <" + nodeTemplate.getName() + "> is ignored since it's not of type AbstractPropertyValue but " + iValue.getClass().getSimpleName());
                         }
                     });
                 }
@@ -939,7 +938,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
         copyProperty(csar, topology, statefulsetNode, "metadata", statefulsetResourceNodeProperties, "resource_def.metadata");
         AbstractPropertyValue volumeDeletable = PropertyUtil.getPropertyValueFromPath(safe(statefulsetNode.getProperties()), "volumeDeletable");
         if(volumeDeletable == null){
-            context.log().error("Failed to get volumeDeletable property on "+ statefulsetNode.getName());
+            context.log().internalError(statefulsetNode.getName(), "Failed to get volumeDeletable property on "+ statefulsetNode.getName());
         }
         setNodePropertyPathValue(csar, topology, statefulsetResourceNode, "volumeDeletable", volumeDeletable);
 
@@ -951,17 +950,17 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
         feedPropertyValue(statefulsetNode.getProperties(), "metadata.name", stsName, false);
         AbstractPropertyValue resource_id = PropertyUtil.getPropertyValueFromPath(safe(statefulsetNode.getProperties()), "metadata.name");
         if(resource_id == null){
-            context.log().error("Failed to get metadata.name property on "+ statefulsetNode.getName());
+            context.log().error(statefulsetNode.getName(), "Failed to get metadata.name property on "+ statefulsetNode.getName());
         }
         setNodePropertyPathValue(csar, topology, statefulsetResourceNode, "resource_id", resource_id);
 
         AbstractPropertyValue propertyValue = PropertyUtil.getPropertyValueFromPath(safe(statefulsetNode.getProperties()), "spec");
         if(propertyValue == null){
-            context.log().error("Failed to get spec property on "+ statefulsetNode.getName());
+            context.log().error(statefulsetNode.getName(), "Failed to get spec property on "+ statefulsetNode.getName());
         }
         NodeType nodeType = ToscaContext.get(NodeType.class, statefulsetNode.getType());
         if(nodeType == null){
-            context.log().error("Failed to get nodeType property on "+ statefulsetNode.getName());
+            context.log().error(statefulsetNode.getName(), "Failed to get nodeType property on "+ statefulsetNode.getName());
         }
         PropertyDefinition propertyDefinition = nodeType.getProperties().get("spec");
         Object transformedValue = getTransformedValue(propertyValue, propertyDefinition, "");
@@ -978,7 +977,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
         // find each node of type Service that targets this statefulset
         Set<NodeTemplate> sourceCandidates = TopologyNavigationUtil.getSourceNodes(topology, statefulsetNode, "feature");
         if(sourceCandidates == null){
-            context.log().error("Failed to get sourceCandidates that target node "+ statefulsetNode.getName());
+            context.log().error(statefulsetNode.getName(), "Failed to get sourceCandidates that target node "+ statefulsetNode.getName());
         }
         for (NodeTemplate sourceCandidate : sourceCandidates) {
             NodeType sourceCandidateType = ToscaContext.get(NodeType.class, sourceCandidate.getType());
@@ -1297,7 +1296,7 @@ public class KubernetesFinalTopologyModifier extends AbstractKubernetesModifier 
             addRelationshipTemplate(csar, topology, ingressResourceNode, secretResourceNode.getName(), NormativeRelationshipConstants.DEPENDS_ON,
                     "dependency", "feature");
         } else if (StringUtils.isNoneEmpty(ingressCrt) || StringUtils.isNoneEmpty(ingressKey)) {
-            context.log().warn("tls_crt or tls_key is provided for service  <" + serviceNode + "> but both are needed in order to create a secured Ingress. A non secured Ingress is created !");
+            context.log().warn(serviceResourcesNode.getName(),"tls_crt or tls_key is provided for service  <" + serviceNode + "> but both are needed in order to create a secured Ingress. A non secured Ingress is created !");
         }
 
     }

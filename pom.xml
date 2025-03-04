@@ -3,10 +3,10 @@
   <parent>
     <groupId>alien4cloud</groupId>
     <artifactId>alien4cloud-parent</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.0</version>
   </parent>
   <artifactId>alien4cloud-kubernetes-plugin</artifactId>
-  <version>3.3.0</version>
+  <version>3.4.0</version>
   <name>Alien 4 Cloud K8S plugin</name>
   <description>This plugin is used to manage transformation of containers in a topology into specific kubernetes nodes.</description>
 
@@ -50,8 +50,6 @@
     <velocity.version>1.7</velocity.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <hibernate-validator.version>5.0.2.Final</hibernate-validator.version>
-    <javax.el-api.version>3.0.0</javax.el-api.version>
-    <javax.el-impl.version>2.2.6</javax.el-impl.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-lang.version>3.5</commons-lang.version>
     <commons-collections.version>4.1</commons-collections.version>
@@ -65,13 +63,6 @@
     <!-- XML Parsing -->
     <jaxb-api.version>2.0</jaxb-api.version>
     <jaxb.version>2.1.9</jaxb.version>
-
-    <!-- Spring (DI / Rest / Security) -->
-    <spring-boot.version>1.4.0.RELEASE</spring-boot.version>
-    <spring.version>4.3.2.RELEASE</spring.version>
-    <spring.security.version>3.2.5.RELEASE</spring.security.version>
-    <spring.ldap.version>2.0.1.RELEASE</spring.ldap.version>
-    <aspectj.version>1.7.4</aspectj.version>
 
     <!-- Metrics for webapp -->
     <codahale-metrics.version>3.0.2</codahale-metrics.version>
@@ -124,7 +115,6 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
     <!-- tests -->
@@ -182,22 +172,14 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
-      <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-messaging</artifactId>
-      <version>${spring.version}</version>
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>info.cukes</groupId>
       <artifactId>cucumber-core</artifactId>
