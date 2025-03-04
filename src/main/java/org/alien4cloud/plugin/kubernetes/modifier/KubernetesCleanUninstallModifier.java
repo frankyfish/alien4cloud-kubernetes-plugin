@@ -49,7 +49,7 @@ public class KubernetesCleanUninstallModifier extends AbstractKubernetesModifier
             WorkflowValidator.disableValidationThreadLocal.set(true);
             doProcess(new KubernetesModifierContext(topology, context));
         } catch (Exception e) {
-            context.getLog().error("KubernetesCleanUninstallModifier Can't process");
+            context.getLog().internalError("KubernetesCleanUninstallModifier Can't process");
             log.warn("KubernetesCleanUninstallModifier Can't process ", e);
         } finally {
             WorkflowValidator.disableValidationThreadLocal.remove();

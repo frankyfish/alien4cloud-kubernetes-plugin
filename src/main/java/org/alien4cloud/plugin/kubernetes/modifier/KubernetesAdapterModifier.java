@@ -96,7 +96,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
             WorkflowValidator.disableValidationThreadLocal.set(true);
             doProcess(new KubernetesModifierContext(topology, context));
         } catch (Exception e) {
-            context.getLog().error("Couldn't process " + A4C_KUBERNETES_ADAPTER_MODIFIER_TAG);
+            context.getLog().internalError("Couldn't process " + A4C_KUBERNETES_ADAPTER_MODIFIER_TAG);
             log.warn("Couldn't process " + A4C_KUBERNETES_ADAPTER_MODIFIER_TAG, e);
         } finally {
             WorkflowValidator.disableValidationThreadLocal.remove();
@@ -116,10 +116,10 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
         AbstractPropertyValue nsConfigPV = null;
         Set<NodeTemplate> kubeNSNodes = TopologyNavigationUtil.getNodesOfType(topology, K8S_TYPES_KUBE_NAMESPACE, false);
         if (kubeNSNodes != null && !kubeNSNodes.isEmpty()) {
-            if (kubeNSNodes.size() > 1) {
-                context.log().warn("More than one KubeNamespace node have been found, juste taking the first one");
-            }
             kubeNSNode = kubeNSNodes.iterator().next();
+            if (kubeNSNodes.size() > 1) {
+                context.log().warn(kubeNSNode.getName(), "More than one KubeNamespace node have been found, just took the first one");
+            }
             AbstractPropertyValue nsPV = PropertyUtil.getPropertyValueFromPath(kubeNSNode.getProperties(), "namespace");
             if (nsPV != null && nsPV instanceof ScalarPropertyValue) {
                 namespace = ((ScalarPropertyValue)nsPV).getValue();
@@ -129,10 +129,10 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
         // If a node of type KubeCluster is found in the topology, get the config and store it in the context for later usage
         Set<NodeTemplate> kubeClusterNodes = TopologyNavigationUtil.getNodesOfType(topology, K8S_TYPES_KUBE_CLUSTER, false);
         if (kubeClusterNodes != null && !kubeClusterNodes.isEmpty()) {
-            if (kubeClusterNodes.size() > 1) {
-                context.log().warn("More than one KubeCluster node have been found, juste taking the first one");
-            }
             NodeTemplate kubeClusterNode = kubeClusterNodes.iterator().next();
+            if (kubeClusterNodes.size() > 1) {
+                context.log().warn(kubeClusterNode.getName(), "More than one KubeCluster node have been found, just took the first one");
+            }
             AbstractPropertyValue configPV = PropertyUtil.getPropertyValueFromPath(kubeClusterNode.getProperties(), "config");
             if (configPV != null && configPV instanceof ScalarPropertyValue) {
                 String kubeConfig = ((ScalarPropertyValue)configPV).getValue();
@@ -193,7 +193,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
 
         String providedNamespace = getProvidedMetaproperty(context.getFlowExecutionContext(), K8S_NAMESPACE_METAPROP_NAME);
         if (providedNamespace != null) {
-            context.log().info("All resources will be created into the namespace <" + providedNamespace + ">");
+            context.log().info(providedNamespace, "All resources will be created in the namespace <" + providedNamespace + ">");
             namespace = providedNamespace;
         }
 
@@ -414,7 +414,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
             } else {
                 if (!targetName.equals(relationshipTemplate.getTarget())) {
                     String msg = String.format("A given service (%s) can't expose multiple ports from different containers", serviceNode.getName());
-                    context.getFlowExecutionContext().getLog().error(msg);
+                    context.getFlowExecutionContext().getLog().error(serviceNode.getName(), msg);
                     throw new UnsupportedOperationException();
                 }
             }
@@ -505,14 +505,14 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
                 RelationshipTemplate relationshipToRemove = TopologyNavigationUtil.getTargetRelationships(nodeToKeep, "dependency").iterator().next();
                 if (!relationshipToRemove.getTarget().equals(deploymentUnitNodeName)) {
                     String msg = String.format("Same service name (%s) used for services that target different deployment units (at least %s and %s), please review your matching !", e.getKey(), nodeToKeep.getName(), nodeToRemove.getName());
-                    context.getLog().error(msg);
+                    context.getLog().error(nodeToRemoveCandidate.getName(), msg);
                     throw new UnsupportedOperationException();
                 }
                 // check that services with same service name are of the same type
                 String nodeToRemoveServiceType = PropertyUtil.getScalarPropertyValueFromPath(safe(nodeToRemove.getProperties()), "spec.service_type");
                 if (!StringUtils.equals(nodeToKeepServiceType, nodeToRemoveServiceType)) {
                     String msg = String.format("Same service name (%s) used for services that are different service types (%s (%s) != %s (%s)), please review your matching !", e.getKey(), nodeToKeep.getName(), nodeToKeepServiceType, nodeToRemove.getName(), nodeToRemoveServiceType);
-                    context.getLog().error(msg);
+                    context.getLog().error(nodeToRemoveCandidate.getName(), msg);
                     throw new UnsupportedOperationException();
                 }
 
@@ -567,7 +567,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
         NodeTemplate targetNodeTemplate = context.getTopology().getNodeTemplates().get(targetRelationship.getTarget());
         AbstractPropertyValue port = TopologyNavigationUtil.getNodeCapabilityPropertyValue(targetNodeTemplate, targetRelationship.getTargetedCapabilityName(), "port");
         if (port == null) {
-            context.log().error("Connecting container to an external service requires its endpoint port to be defined. Port of [" + targetNodeTemplate.getName()
+            context.log().error(endpointNode.getName(), "Connecting container to an external service requires its endpoint port to be defined. Port of [" + targetNodeTemplate.getName()
                     + ".capabilities." + targetRelationship.getTargetedCapabilityName() + "] is not defined.");
             return;
         }
@@ -891,7 +891,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
                     sb.append(PropertyUtil.getScalarValue(v));
                 } else {
                     // TODO: we need a AbstractPropertyValue serializer
-                    context.getLog().warn("Some element in concat operation for input <" + inputName + "> (" + serializePropertyValue(param)+ ") of container <" + nodeTemplate.getName() + "> resolved to a complex result. Let's ignore it.");
+                    context.getLog().warn(nodeTemplate.getName(), "Some element in concat operation for input <" + inputName + "> (" + serializePropertyValue(param)+ ") of container <" + nodeTemplate.getName() + "> resolved to a complex result. Let's ignore it.");
                 }
             }
             return new ScalarPropertyValue(sb.toString());
@@ -910,11 +910,11 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
                 if (propertyValue instanceof PropertyValue) {
                     return propertyValue;
                 } else {
-                    context.getLog().warn("Property is not PropertyValue but <" + propertyValue.getClass() + "> for input <" + inputName + "> (" + serializePropertyValue(propertyValue)+ ") of container <" + nodeTemplate.getName() + ">");
+                    context.getLog().warn(nodeTemplate.getName(), "Property is not PropertyValue but <" + propertyValue.getClass() + "> for input <" + inputName + "> (" + serializePropertyValue(propertyValue)+ ") of container <" + nodeTemplate.getName() + ">");
                 }
             }
         } catch (IllegalArgumentException iae) {
-            context.getLog().warn("Can't resolve value for input <" + inputName + "> (" + serializePropertyValue(iValue)+ ") of container <" + nodeTemplate.getName() + ">, error was : " + iae.getMessage());
+            context.getLog().warn(nodeTemplate.getName(), "Can't resolve value for input <" + inputName + "> (" + serializePropertyValue(iValue)+ ") of container <" + nodeTemplate.getName() + ">, error was : " + iae.getMessage());
         }
         return null;
     }
@@ -1163,9 +1163,9 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
                                         envEntry.getValue().put("value", v);
                                         try {
                                             appendNodePropertyPathValue(context.getCsar(), context.getTopology(), containerNode, "container.env", envEntry);
-                                            context.log().info("Env variable <" + envKey + "> for container <" + containerNode.getName() + "> set to value <" + serializePropertyValue(v) + ">");
+                                            context.log().info(containerNode.getName(), "Env variable <" + envKey + "> for container <" + containerNode.getName() + "> set to value <" + serializePropertyValue(v) + ">");
                                         } catch (Exception e) {
-                                            context.log().warn("Not able to set env variable <" + envKey + "> to value <" + serializePropertyValue(v) + "> for container <" + containerNode.getName() + ">, error was : " + e.getMessage());
+                                            context.log().warn(containerNode.getName(), "Not able to set env variable <" + envKey + "> to value <" + serializePropertyValue(v) + "> for container <" + containerNode.getName() + ">, error was : " + e.getMessage());
                                         }
                                     } else if (!configMapFactories.isEmpty()) {
                                         // maybe it's a config that should be associated with a configMap
@@ -1175,14 +1175,14 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
                                                 // ok this input is related to this configMapFactory
                                                 String varName = inputName.substring(inputPrefix.length());
                                                 if (!(v instanceof ScalarPropertyValue)) {
-                                                    context.log().warn("Ignoring INPUT named <" + inputName + "> for container <" + containerNode.getName() + "> because the value is not a scalar (" + serializePropertyValue(v) + ") and cannot be added to a configMap");
+                                                    context.log().warn(containerNode.getName(), "Ignoring INPUT named <" + inputName + "> for container <" + containerNode.getName() + "> because the value is not a scalar (" + serializePropertyValue(v) + ") and cannot be added to a configMap");
                                                 } else {
                                                     for (NodeTemplate configMapFactory : configMapFactoryEntry.getValue()) {
                                                         try {
                                                             setNodePropertyPathValue(context.getCsar(), context.getTopology(), configMapFactory, "input_variables." + varName, v);
-                                                            context.log().info("Successfully set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap <" + configMapFactory.getName() + "> for container <" + containerNode.getName() + ">");
+                                                            context.log().info(containerNode.getName(), "Successfully set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap <" + configMapFactory.getName() + "> for container <" + containerNode.getName() + ">");
                                                         } catch (Exception e) {
-                                                            context.log().warn("Not able to set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap, <" + configMapFactory.getName() + "> for container <" + containerNode.getName() + ">, error was : " + e.getMessage());
+                                                            context.log().warn(containerNode.getName(), "Not able to set INPUT named <" + inputName + "> with value <" + serializePropertyValue(v) + "> to configMap, <" + configMapFactory.getName() + "> for container <" + containerNode.getName() + ">, error was : " + e.getMessage());
                                                         }
                                                     }
                                                 }
@@ -1191,14 +1191,14 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
                                         }
                                     }
                                 } else {
-                                    context.log().warn("Not able to define value for input <" + inputName + "> (" + serializePropertyValue((AbstractPropertyValue) iValue) + ") of container <" + containerNode.getName() + ">");
+                                    context.log().warn(containerNode.getName(), "Not able to define value for input <" + inputName + "> (" + serializePropertyValue((AbstractPropertyValue) iValue) + ") of container <" + containerNode.getName() + ">");
                                 }
                             } else {
-                                context.log().warn("Input <" + inputName + "> of container <" + containerNode.getName() + "> is ignored since it's not of type AbstractPropertyValue but " + iValue.getClass().getSimpleName());
+                                context.log().warn(containerNode.getName(), "Input <" + inputName + "> of container <" + containerNode.getName() + "> is ignored since it's not of type AbstractPropertyValue but " + iValue.getClass().getSimpleName());
                             }
                         } catch(IllegalArgumentException e) {
                             String msg = String.format("Cannot resolve input <%s> of container <%s>, error is : %s" ,inputName,containerNode.getName(),e.getMessage());
-                            context.log().error(msg);
+                            context.log().error(containerNode.getName(), msg);
                             throw e;
                         }
                     });
@@ -1266,7 +1266,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
         // fill the ports map of the hosting K8S AbstractContainer
         AbstractPropertyValue port = containerNodeTemplate.getCapabilities().get(endpointName).getProperties().get("port");
         if (port == null) {
-            context.log().error("Connecting container to an external requires its endpoint port to be defined. Port of [" + containerNodeTemplate.getName()
+            context.log().error(containerNodeTemplate.getName(), "Connecting container to an external requires its endpoint port to be defined. Port of [" + containerNodeTemplate.getName()
                     + ".capabilities." + endpointName + "] is not defined.");
             return;
         }
@@ -1644,7 +1644,7 @@ public class KubernetesAdapterModifier extends AbstractKubernetesModifier {
             // add a relation between the Ingress and the secret
             addRelationshipTemplate(context, ingressResourceNode, secretResourceNode.getName(), NormativeRelationshipConstants.DEPENDS_ON, "dependency", "feature");
         }  else if (StringUtils.isNoneEmpty(ingressCrt) || StringUtils.isNoneEmpty(ingressKey)) {
-            context.log().warn("tls_crt or tls_key is provided for ingress  <" + ingressNode + "> but both are needed in order to create a secured Ingress. A non secured Ingress is created !");
+            context.log().warn(ingressNode.getName(),  "tls_crt or tls_key is provided for ingress  <" + ingressNode + "> but both are needed in order to create a secured Ingress. A non secured Ingress is created !");
         }
 
         // add relation to namespace if any
