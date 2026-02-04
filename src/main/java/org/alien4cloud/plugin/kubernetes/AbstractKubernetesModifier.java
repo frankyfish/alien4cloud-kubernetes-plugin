@@ -27,7 +27,7 @@ import org.alien4cloud.tosca.normative.primitives.SizeUnit;
 import org.alien4cloud.tosca.normative.types.SizeType;
 import org.alien4cloud.tosca.normative.types.ToscaTypes;
 import org.alien4cloud.tosca.utils.TopologyNavigationUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import jakarta.annotation.Resource;
 
